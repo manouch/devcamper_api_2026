@@ -8,7 +8,9 @@ exports.getBootcamps = (req, res, next) => {
   // res.json({name: 'Manuchehr'});
   // res.sendStatus(400);
   // res.status(400).json({ success: false });
-  res.status(200).json({ success: true, msg: 'Show all bootcamps' });
+  res
+    .status(200)
+    .json({ success: true, msg: 'Show all bootcamps' });
 }
 
 // @desc    GET single bootcamp
@@ -22,7 +24,7 @@ exports.getBootcamp = (req, res, next) => {
 // @route   POST /api/v1/bootcamps
 // @access  Private
 exports.createBootcamp = (req, res, next) => {
-    res.status(200).json({ success: true, msg: 'Create new bootcamp' });
+  res.status(200).json({ success: true, msg: 'Create new bootcamp' });
 }
 
 // @desc    Update bootcamp
