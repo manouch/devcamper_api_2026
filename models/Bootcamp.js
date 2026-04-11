@@ -1,6 +1,4 @@
-const strict = require('assert/strict');
 const mongoose = require('mongoose');
-const { type } = require('os');
 
 const BootcampSchema = new mongoose.Schema({
   name: {
@@ -8,18 +6,18 @@ const BootcampSchema = new mongoose.Schema({
     required: [true, 'Please add a name'],
     unique: true,
     trim: true,
-    maxLength: [50, 'Name can not be mre than 50 characters']
+    maxLength: [50, 'Name can not be more than 50 characters']
   },
   slug: String,
   description: {
     type: String,
     required: [true, 'Please add a description'],
-    maxLength: [500, 'Descripton can not be mre than 50 characters']
+    maxLength: [500, 'Description can not be more than 500 characters']
   },
   website: {
     type: String,
     match: [
-      /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/, 
+      /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/,
       'Please use a valid URL with HTTP or HTTPS'
     ]
   },
@@ -39,25 +37,24 @@ const BootcampSchema = new mongoose.Schema({
     required: [true, 'Please add an address']
   },
   location: {
-    // GeoJSON Point
-    type: {
-      type: String,
-      enum: ['Point'],
-      required: true
-    },
-    coordinates: {
-      type: [Number],
-      required: true,
-      index: '2dsphere'
-    },
-    formattedAddress: String,
-    street: String,
-    city: String,
-    state: String,
-    zipcode: String,
-    country: String,
+  type: {
+    type: String,
+    enum: ['Point'],
+    required: true
   },
-  careets: {
+  coordinates: {
+    type: [Number],
+    required: true,
+    index: '2dsphere'
+  },
+  formattedAddress: String,
+  street: String,
+  city: String,
+  state: String,
+  zipcode: String,
+  country: String
+},
+  careers: {
     // Array of strings
     type: [String],
     required: true,
@@ -78,7 +75,7 @@ const BootcampSchema = new mongoose.Schema({
   averageCost: Number,
   photo: {
     type: String,
-    dafault: 'no-photo.jpg'
+    default: 'no-photo.jpg'
   },
   housing: {
     type: Boolean,
