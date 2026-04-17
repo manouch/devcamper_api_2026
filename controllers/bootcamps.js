@@ -49,7 +49,7 @@ exports.createBootcamp = async (req, res, next) => {
       success: true,
       data: bootcamp
     })
-  } catch (error) {
+  } catch (err) {
     next(err);
   }
 }
