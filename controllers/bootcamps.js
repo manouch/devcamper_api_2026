@@ -74,29 +74,46 @@ exports.deleteBootcamp = asyncHandler(async (req, res, next) => {
   res.status(200).json({ success: true, data: {} });
 });
 
-// @desc    Get bootcamps within a radius
-// @route   GET /api/v1/bootcamps/radius/:zipcode/:distance
-// @access  Private
 exports.getBootcampsInRadius = asyncHandler(async (req, res, next) => {
-  const { zipcode, distance } = req.params;
+  const distance = parseFloat(req.params.distance);
+  const zipcode = req.params.zipcode;
 
   // Get lat/lng from geocoder
   const loc = await geocoder.geocode(zipcode);
-  const lat = loc[0].latitude;
-  const lng = loc[0].longitude;
+  // const lat = loc[0].latitude;
+  // const lng = loc[0].longitude;
 
-  // Calc radius using radians
-  // Divide dist by radius of Earth
-  // Earth Radius = 3,963 mi / 6,378 km
-  const radius = distance / 3963;
+  const geoResult = loc.find(
+  item => item.countryCode === 'us'
+);
 
-  const bootcamps = await Bootcamp.find({
-    location: { $geoWithin: { $centerSphere: [[lng, lat], radius] } }
-  });
+if (!geoResult) {
+  return next(new ErrorResponse('No US location found for ZIP', 400));
+}
+
+const lat = geoResult.latitude;
+const lng = geoResult.longitude;
+
+  console.log('ZIP COORDS:', lng, lat);
+  console.log('ZIP RESULT:', loc);
+
+  const bootcamps = await Bootcamp.aggregate([
+    {
+      $geoNear: {
+        near: {
+          type: 'Point',
+          coordinates: [lng, lat]
+        },
+        distanceField: 'distance',
+        spherical: true,
+        maxDistance: distance * 1609 // miles → meters
+      }
+    }
+  ]);
 
   res.status(200).json({
     success: true,
     count: bootcamps.length,
     data: bootcamps
-  })
+  });
 });
