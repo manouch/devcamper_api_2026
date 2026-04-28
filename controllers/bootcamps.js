@@ -7,14 +7,45 @@ const geocoder = require('../utils/geocoder');
 // @route   GET /api/v1/bootcamps
 // @access  Public
 exports.getBootcamps = asyncHandler(async (req, res, next) => {
-  // res.send('<h1>Hello from express</h1>');
-  // res.send({name: 'Manuchehr'});
-  // res.json({name: 'Manuchehr'});
-  // res.sendStatus(400);
-  // res.status(400).json({ success: false });
-  const bootcamps = await Bootcamp.find();
+  let queryObj = { ...req.query };
 
-  res.status(200).json({ success: true, count: bootcamps.length, data: bootcamps });
+  // Remove special fields
+  const removeFields = ['select', 'sort', 'page', 'limit'];
+  removeFields.forEach(param => delete queryObj[param]);
+
+  let parsed = {};
+
+  for (let key in queryObj) {
+    if (key.includes('[')) {
+      // example: averageCost[lte]
+      const field = key.split('[')[0];
+      const operator = key.match(/\[(.*)\]/)[1];
+
+      if (!parsed[field]) {
+        parsed[field] = {};
+      }
+
+      if (operator === 'in') {
+        parsed[field][`$${operator}`] = queryObj[key].split(',');
+      } else {
+        parsed[field][`$${operator}`] = Number(queryObj[key]);
+      }
+    } else {
+      parsed[key] = queryObj[key];
+    }
+  }
+
+  console.log('FINAL FILTER:', parsed);
+
+  let query = Bootcamp.find(parsed);
+
+  const bootcamps = await query;
+
+  res.status(200).json({
+    success: true,
+    count: bootcamps.length,
+    data: bootcamps
+  });
 });
 
 // @desc    GET single bootcamp
@@ -84,15 +115,15 @@ exports.getBootcampsInRadius = asyncHandler(async (req, res, next) => {
   // const lng = loc[0].longitude;
 
   const geoResult = loc.find(
-  item => item.countryCode === 'us'
-);
+    item => item.countryCode === 'us'
+  );
 
-if (!geoResult) {
-  return next(new ErrorResponse('No US location found for ZIP', 400));
-}
+  if (!geoResult) {
+    return next(new ErrorResponse('No US location found for ZIP', 400));
+  }
 
-const lat = geoResult.latitude;
-const lng = geoResult.longitude;
+  const lat = geoResult.latitude;
+  const lng = geoResult.longitude;
 
   console.log('ZIP COORDS:', lng, lat);
   console.log('ZIP RESULT:', loc);
