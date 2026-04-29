@@ -9,15 +9,28 @@ const geocoder = require('../utils/geocoder');
 exports.getBootcamps = asyncHandler(async (req, res, next) => {
   let queryObj = { ...req.query };
 
+  // Copy req.query
+  // const reqQuery = { ...req.query }; // todo
+
+  // Fields to exclude
+  // const removeFields
+
   // Remove special fields
   const removeFields = ['select', 'sort', 'page', 'limit'];
   removeFields.forEach(param => delete queryObj[param]);
 
+  console.log(queryObj);
+
   let parsed = {};
 
   for (let key in queryObj) {
+    let value = queryObj[key];
+
+    // Convert booleans
+    if (value === 'true') value = true;
+    if (value === 'false') value = false;
+
     if (key.includes('[')) {
-      // example: averageCost[lte]
       const field = key.split('[')[0];
       const operator = key.match(/\[(.*)\]/)[1];
 
@@ -26,18 +39,32 @@ exports.getBootcamps = asyncHandler(async (req, res, next) => {
       }
 
       if (operator === 'in') {
-        parsed[field][`$${operator}`] = queryObj[key].split(',');
+        parsed[field][`$${operator}`] = value.split(',');
       } else {
-        parsed[field][`$${operator}`] = Number(queryObj[key]);
+        parsed[field][`$${operator}`] = Number(value);
       }
     } else {
-      parsed[key] = queryObj[key];
+      parsed[key] = value;
     }
   }
 
   console.log('FINAL FILTER:', parsed);
 
   let query = Bootcamp.find(parsed);
+
+  // Select Fields
+  if (req.query.select) {
+    const fields = req.query.select.split(',').join(' ');
+    query = query.select(fields);
+  }
+
+  // Sort
+  if (req.query.sort) {
+    const sortBy = req.query.sort.split(',').join(' ');
+    query = query.sort(sortBy);
+  } else {
+    query = query.sort('-createdAt');
+  }
 
   const bootcamps = await query;
 
