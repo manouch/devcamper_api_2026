@@ -50,7 +50,8 @@ exports.getBootcamps = asyncHandler(async (req, res, next) => {
 
   console.log('FINAL FILTER:', parsed);
 
-  let query = Bootcamp.find(parsed);
+  // check it
+  let query = Bootcamp.find(parsed).populate('courses');
 
   // Select Fields
   if (req.query.select) {
