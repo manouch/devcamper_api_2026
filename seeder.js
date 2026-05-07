@@ -60,7 +60,7 @@ const importData = async () => {
     }
 
     await Bootcamp.create(enrichedBootcamps);
-    // await Course.create(courses);
+    await Course.create(courses);
 
     console.log('Data Imported...'.green.inverse);
   } catch (err) {
